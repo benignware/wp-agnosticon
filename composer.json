@@ -1,0 +1,91 @@
+{
+  "name": "benignware/wp-agnosticon",
+  "version": "0.0.1",
+  "type": "wordpress-plugin",
+  "license": "UNLICENSED",
+  "description": "Universal icons for WordPress",
+  "homepage": "http://github.com/benignware/wp-agnosticon",
+  "authors": [
+    {
+      "name": "Rafael Nowrotek",
+      "email": "mail@benignware.com",
+      "homepage": "https://github.com/benignware"
+    }
+  ],
+  "keywords": [
+    "wordpress", "wordpress-plugin", "menu", "cta", "search"
+  ],
+  "support": {
+    "issues": "https://github.com/benignware/wp-agnosticon/issues"
+  },
+  "repositories": [{
+    "type": "composer",
+    "url": "https://wpackagist.org"
+  }, {
+    "type": "package",
+    "package": {
+      "name": "benignware/benignware-connect",
+      "version": "v1.0.1",
+      "type": "wordpress-plugin",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/benignware/wp-benignware-connect.git",
+        "reference": "v1.0.1"
+      }
+    }
+  }, {
+    "type":"package",
+    "package": {
+      "name": "wptrt/theme-unit-test",
+      "version": "master",
+      "source": {
+        "url": "https://github.com/WPTRT/theme-unit-test.git",
+        "type": "git",
+        "reference": "master"
+      }
+    }
+  }],
+  "require": {
+    "php": ">=5.3.0",
+    "composer/installers": "~1.0"
+  },
+  "require-dev": {
+    "wptrt/theme-unit-test": "dev-master",
+    "benignware/benignware-connect": ">=1.0.1",
+    "wpackagist-plugin/block-manager": ">=1.2.4",
+    "wpackagist-plugin/classic-editor": "*",
+    "wpackagist-plugin/classic-menu-block": "*",
+    "wpackagist-plugin/classic-widgets": "*",
+    "wpackagist-plugin/disable-gutenberg": ">=2.8.1",
+    "wpackagist-plugin/font-awesome": ">=4.3.2",
+    "wpackagist-plugin/frontend-dashicons": ">=1.0.2",
+    "wpackagist-plugin/wp-ionic-icons": ">=2.1",
+    "wpackagist-plugin/icon-fonts": ">=1.0.0",
+    "wpackagist-plugin/wp-fontallic-easypromoweb": ">=1.2",
+    "wpackagist-theme/twentyseventeen": ">=2.9",
+    "wpackagist-theme/twentytwentyone": "*",
+    "wpackagist-theme/twentytwentytwo": "*",
+    "wpackagist-theme/twentytwentythree": "*"
+  },
+  "extra": {
+    "webroot-dir": "wp-core",
+  	"webroot-package": "wordpress",
+    "installer-paths": {
+      "wp-content/plugins/{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "wp-content/mu-plugins/{$name}/": [
+        "type:wordpress-muplugin"
+      ],
+      "wp-content/themes/{$name}/": [
+        "type:wordpress-theme"
+      ]
+    }
+  },
+  "config": {
+    "vendor-dir": "vendor/lib",
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  }
+}
