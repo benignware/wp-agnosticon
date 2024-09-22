@@ -16,6 +16,9 @@ require 'lib/resources.php';
 require 'lib/actions.php';
 require 'lib/shortcode.php';
 
+require 'menu-icon.php';
+
+
 function get_data() {
   global $__agnosticon__;
 
@@ -168,3 +171,41 @@ function enqueue_scripts() {
 
 add_action( 'admin_enqueue_scripts', 'benignware\wp\agnosticon\enqueue_scripts', 0);
 
+
+
+function enqueue_block_editor_assets() {
+  wp_enqueue_script(
+      'agnosticon-block-editor-assets',
+      plugin_dir_url( __FILE__ ) . 'dist/agnosticon-editor.js',
+      [ 'wp-blocks', 'wp-rich-text', 'wp-element', 'wp-editor', 'wp-components' ],
+      filemtime( plugin_dir_path( __FILE__ ) . 'dist/agnosticon-editor.js' ), // Version based on file modification time
+      true // Load in footer
+  );
+
+    wp_register_style(
+      'agnosticon',
+      admin_url( 'admin-ajax.php' ) . '?action=agnosticon_css',
+      array(),
+      null // You can specify a version if needed
+  );
+
+  // Enqueue the style specifically for the block editor
+  wp_enqueue_style('agnosticon');
+}
+add_action( 'enqueue_block_editor_assets', 'benignware\wp\agnosticon\enqueue_block_editor_assets' );
+
+
+
+
+function enqueue_agnosticon_styles() {
+    wp_register_style(
+        'agnosticon',
+        admin_url('admin-ajax.php') . '?action=agnosticon_css',
+        array(),
+        null // You can specify a version if needed
+    );
+
+    wp_enqueue_style('agnosticon');
+}
+
+add_action('enqueue_block_assets', 'benignware\wp\agnosticon\enqueue_agnosticon_styles');

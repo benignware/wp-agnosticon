@@ -2,11 +2,8 @@
 
 namespace benignware\wp\agnosticon;
 
-function _agnosticon_data_action() {
-
+function agnosticon_data_action() {
   global $wp_styles;
-
-
 
   \WP_Screen::get('front')->set_current_screen();
 
@@ -27,8 +24,8 @@ function _agnosticon_data_action() {
   wp_die();
 }
 
-add_action('wp_ajax_nopriv__agnosticon_data', 'benignware\wp\agnosticon\_agnosticon_data_action');
-add_action('wp_ajax__agnosticon_data', 'benignware\wp\agnosticon\_agnosticon_data_action');
+add_action('wp_ajax_nopriv__agnosticon_data', 'benignware\wp\agnosticon\agnosticon_data_action');
+add_action('wp_ajax__agnosticon_data', 'benignware\wp\agnosticon\agnosticon_data_action');
 
 
 function agnosticon_css() {
@@ -52,6 +49,12 @@ function agnosticon_css() {
   header('Content-Type: text/css');
 
   echo $css;
+  echo "
+    i[data-agnosticon-char]:before {
+      display: inline-block;
+      content: attr(data-agnosticon-char);
+    }
+  ";
 
   die();
 }
@@ -60,33 +63,13 @@ add_action( 'wp_ajax_agnosticon_css',        'benignware\wp\agnosticon\agnostico
 add_action( 'wp_ajax_nopriv_agnosticon_css', 'benignware\wp\agnosticon\agnosticon_css' );
 
 
+function agnosticon_search_action() {
+  $s = stripslashes( $_GET['search'] );
 
+  $icons = get_icons($s);
 
-function _agnosticon_search_action() {
-  global $__agnosticon__;
-
-  _agnosticon_load();
-
-  $s = stripslashes( $_POST['search'] );
-
-  $icons = isset($__agnosticon__) ? $__agnosticon__->icons : [];
-
-  $items = [];
-
-  foreach($icons as $icon) {
-    if (preg_match('~' . preg_quote($s, '~') . '~', $icon->id)) {
-      $items[] = (object) array_merge(
-        (array) $icon,
-        [
-          'label' => $icon->name,
-          'value' => $icon->id,
-        ]
-        );
-    }
-  }
-
-	wp_send_json_success( $items );
+	wp_send_json_success( $icons );
 }
 
-add_action( 'wp_ajax_agnosticon_search',        'benignware\wp\agnosticon\_agnosticon_search_action' );
-add_action( 'wp_ajax_nopriv_agnosticon_search', 'benignware\wp\agnosticon\_agnosticon_search_action' );
+add_action( 'wp_ajax_agnosticon_search',        'benignware\wp\agnosticon\agnosticon_search_action' );
+add_action( 'wp_ajax_nopriv_agnosticon_search', 'benignware\wp\agnosticon\agnosticon_search_action' );

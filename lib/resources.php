@@ -397,9 +397,9 @@ function _agnosticon_load() {
   }
 
   // Check if this is an AJAX request to prevent infinite loop
-  if ( wp_doing_ajax() ) {
-    return;
-  }
+  // if ( wp_doing_ajax() ) {
+  //   return;
+  // }
 
   // Check if the 'action' parameter is set and matches
   if ( isset( $_GET['action'] ) && $_GET['action'] === '_agnosticon_data' ) {
