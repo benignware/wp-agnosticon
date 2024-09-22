@@ -1,136 +1,91 @@
-// const { __ } = wp.i18n;
-// const { TextControl, PanelBody } = wp.components;
-// const { Fragment, useState } = wp.element;
-// const { addFilter } = wp.hooks;
-// const { InspectorControls } = wp.blockEditor;
+// (function (richText, blockEditor, element, components) {
+//   'use strict';
 
-// // Add new attribute to the navigation-link block.
-// const addIconAttribute = (settings) => {
-//     if (settings.name !== 'core/navigation-link') {
-//         return settings;
-//     }
+//   const { useState, useEffect, useRef } = element;
+//   const { Popover, Button, TextControl } = components;
+//   const { RichTextToolbarButton, useBlockProps } = blockEditor;
+//   const formatName = 'myplugin/inline-icon';
 
-//     return {
-//         ...settings,
-//         attributes: {
-//             ...settings.attributes,
-//             icon: {
-//                 type: 'object', // Change to object
-//                 default: {},
-//             },
-//         },
-//     };
-// };
+//   // Register the custom format type
+//   richText.registerFormatType(formatName, {
+//     title: 'Inline Icon',
+//     tagName: 'i',
+//     className: 'my-inline-icon', // A class name for styling
+//     edit({ isActive, value, onChange }) {
+//       const [isOpen, setOpen] = useState(false);
+//       const [name, setName] = useState('');
+//       const popoverRef = useRef();
 
-// addFilter(
-//     'blocks.registerBlockType',
-//     'menu-plus/navigation-link/icon-attribute',
-//     addIconAttribute
-// );
+//       // Effect to set the custom name if the format is active
+//       useEffect(() => {
+//         if (isActive) {
+//           const activeFormats = richText.getActiveFormat(value);
+//           const activeFormat = activeFormats ? activeFormats.find((format) => format.type === formatName) : null;
 
-// // IconAutoSuggest component for icon search.
-// const IconAutoSuggest = ({ value, onChange }) => {
-//     const [searchResults, setSearchResults] = useState([]);
+//           if (activeFormat && activeFormat.attributes && activeFormat.attributes['data-custom-name']) {
+//             setName(activeFormat.attributes['data-custom-name']);
+//           }
+//         } else {
+//           setName(''); // Clear the name if not active
+//         }
+//       }, [isActive, value]);
 
-//     const handleSearch = (search) => {
-//         if (!search) {
-//             setSearchResults([]);
-//             return;
+//       const applyFormat = () => {
+//         let newValue;
+
+//         if (name) {
+//           newValue = richText.toggleFormat(value, {
+//             type: formatName,
+//             attributes: { 'data-custom-name': name, style: 'outline: 1px solid red;' },
+//           });
+//         } else {
+//           newValue = richText.removeFormat(value, formatName);
 //         }
 
-//         fetch(`${window.location.origin}/wp-admin/admin-ajax.php?action=agnosticon_search&search=${encodeURIComponent(search)}`)
-//             .then((response) => response.json())
-//             .then((response) => {
-//                 if (response.success) {
-//                     setSearchResults(response.data);
-//                 }
-//             })
-//             .catch((error) => {
-//                 console.error('AJAX error:', error);
-//             });
-//     };
+//         onChange(newValue);
+//         setOpen(false);
+//       };
 
-//     const handleSelect = (iconData) => {
-//         onChange(iconData); // Save the whole icon object
-//         setSearchResults([]); // Close suggestions on selection
-//     };
+//       // Function to handle opening the popover
+//       const handleOpenPopover = () => {
+//         setOpen(true);
+//         setTimeout(() => {
+//           const selection = richText.getSelection();
+//           if (selection) {
+//             const { left, top, height } = selection.getBoundingClientRect();
+//             // Set popover position directly below selected text
+//             popoverRef.current.style.transform = `translate(${left}px, ${top + height}px)`;
+//           }
+//         }, 0);
+//       };
 
-//     return (
-//         <Fragment>
-//             <TextControl
-//                 label={__("Icon", "menu-plus")}
-//                 value={value ? value.name : ''}
-//                 onChange={(newValue) => {
-//                     onChange(newValue);
-//                     handleSearch(newValue);
-//                 }}
-//                 placeholder={__("Search for an icon...", "menu-plus")}
-//             />
-//             {searchResults.length > 0 && (
-//                 <ul className="components-autocomplete__results">
-//                     {searchResults.map((icon) => (
-//                         <li 
-//                             key={icon.id} 
-//                             className="components-autocomplete__result" 
-//                             onClick={() => handleSelect(icon)} // Pass the whole icon object
-//                         >
-//                             <span className={icon.class} style={{ marginRight: '10px' }}></span> {icon.name}
-//                         </li>
-//                     ))}
-//                 </ul>
-//             )}
-//         </Fragment>
-//     );
-// };
-
-// // Add icon controls to the block inspector.
-// const withInspectorControls = (BlockEdit) => {
-//     return (props) => {
-//         if (props.name !== 'core/navigation-link') {
-//             return <BlockEdit {...props} />;
-//         }
-
-//         const { attributes, setAttributes } = props;
-//         const { icon } = attributes;
-
-//         console.log('icon.entity: ', icon.entity);
-
-//         return (
-//             <Fragment>
-                
-//                 <InspectorControls>
-//                     <PanelBody title={__("Icon Settings", "menu-plus")} initialOpen={true}>
-//                         <IconAutoSuggest
-//                             value={icon}
-//                             onChange={(newIcon) => setAttributes({ icon: newIcon })}
-//                         />
-//                     </PanelBody>
-//                 </InspectorControls>
-//                 {icon && icon.entity && (
-//                     <i
-//                         className={icon.class}
-//                         style={{
-//                             ...icon.style ? { fontFamily: icon.font_family } : {},
-//                             // width: '24px',
-//                             // height: '24px',
-//                             // display: 'inline-block',
-//                             // outline: '1px solid #ccc',
-//                             // textAlign: 'center',
-//                             // lineHeight: '24px',
-//                             marginRight: 'calc(var(--wp--style--block-gap, 0.5em) * -1 + 0.5em)',
-//                         }}
-//                         // data-agnosticon-char={icon.char}
-//                         dangerouslySetInnerHTML={{ __html: icon.entity }} // Use entity as inner HTML
-//                     ></i>
-//                 )}
-//                 <BlockEdit {...props} />
-//             </Fragment>
-//         );
-//     };
-// };
-
-// addFilter(
-//     'editor.BlockEdit',
-//     'menu-plus/navigation-link/with-inspector-controls',
-//     withInspectorControls
-// );
+//       return (
+//         <>
+//           <RichTextToolbarButton
+//             icon="edit"
+//             title="Add Inline Icon"
+//             onClick={handleOpenPopover}
+//             isActive={isActive}
+//           />
+//           {isOpen && (
+//             <Popover ref={popoverRef} position="middle center">
+//               <div>
+//                 <TextControl
+//                   label="Custom Name"
+//                   value={name}
+//                   onChange={(newName) => setName(newName)}
+//                 />
+//                 <Button isPrimary onClick={applyFormat}>
+//                   Apply
+//                 </Button>
+//                 <Button isSecondary onClick={() => setOpen(false)}>
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </Popover>
+//           )}
+//         </>
+//       );
+//     },
+//   });
+// })(window.wp.richText, window.wp.blockEditor, window.wp.element, window.wp.components);
