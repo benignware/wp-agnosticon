@@ -3,7 +3,7 @@
  * Plugin Name: Agnosticon
  * Plugin URI: http://github.com/benignware/wp-agnosticon
  * Description: Universal icons for WordPress
- * Version: 0.0.4
+ * Version: 0.0.5
  * Author: Rafael Nowrotek, Benignware
  * Author URI: http://benignware.com
  * License: MIT
@@ -15,7 +15,7 @@ require 'int/font-awesome.php';
 require 'lib/resources.php';
 require 'lib/actions.php';
 require 'lib/shortcode.php';
-
+require 'lib/search.php';
 
 function get_data() {
   global $__agnosticon__;
@@ -27,63 +27,63 @@ function get_data() {
   return $__agnosticon__;
 }
 
-function get_icons($query = null) {
-  $data = get_data();
+// function get_icons($query = null) {
+//   $data = get_data();
 
-  if (!$data) {
-    return [];
-  }
+//   if (!$data) {
+//     return [];
+//   }
 
-  $icons = $data->icons;
+//   $icons = $data->icons;
 
-  // Look-up table for related icons
-  $related_terms = [
-    'cart' => ['basket', 'shopping-cart'],
-    'shopping' => ['commerce', 'shop'],
-    // Add more related terms as needed
-  ];
+//   // Look-up table for related icons
+//   $related_terms = [
+//     'cart' => ['basket', 'shopping-cart'],
+//     'shopping' => ['commerce', 'shop'],
+//     // Add more related terms as needed
+//   ];
 
-  // If there's a query, tokenize and search
-  if ($query) {
-    $tokens = explode(' ', strtolower($query)); // Tokenize the query string
+//   // If there's a query, tokenize and search
+//   if ($query) {
+//     $tokens = explode(' ', strtolower($query)); // Tokenize the query string
 
-    $icons = array_filter($icons, function($icon) use ($tokens, $related_terms) {
-      $relevance = 0;
-      $icon_name = strtolower($icon->id);
+//     $icons = array_filter($icons, function($icon) use ($tokens, $related_terms) {
+//       $relevance = 0;
+//       $icon_name = strtolower($icon->id);
       
-      foreach ($tokens as $token) {
-        // Exact match gets a high score
-        if (strpos($icon_name, $token) !== false) {
-          $relevance += 2; 
-        }
+//       foreach ($tokens as $token) {
+//         // Exact match gets a high score
+//         if (strpos($icon_name, $token) !== false) {
+//           $relevance += 2; 
+//         }
 
-        // Check related terms for fuzzy matches
-        if (isset($related_terms[$token])) {
-          foreach ($related_terms[$token] as $related) {
-            if (strpos($icon_name, $related) !== false) {
-              $relevance += 1; // Fuzzy match gets a lower score
-            }
-          }
-        }
-      }
+//         // Check related terms for fuzzy matches
+//         if (isset($related_terms[$token])) {
+//           foreach ($related_terms[$token] as $related) {
+//             if (strpos($icon_name, $related) !== false) {
+//               $relevance += 1; // Fuzzy match gets a lower score
+//             }
+//           }
+//         }
+//       }
 
-      // Assign relevance score to the icon (without mutating the original)
-      if ($relevance > 0) {
-        $icon->relevance = $relevance;
-        return true;
-      }
+//       // Assign relevance score to the icon (without mutating the original)
+//       if ($relevance > 0) {
+//         $icon->relevance = $relevance;
+//         return true;
+//       }
 
-      return false; // Exclude icons that have zero relevance
-    });
+//       return false; // Exclude icons that have zero relevance
+//     });
 
-    // Sort the icons by relevance in descending order
-    usort($icons, function($a, $b) {
-      return $b->relevance <=> $a->relevance;
-    });
-  }
+//     // Sort the icons by relevance in descending order
+//     usort($icons, function($a, $b) {
+//       return $b->relevance <=> $a->relevance;
+//     });
+//   }
 
-  return $icons;
-}
+//   return $icons;
+// }
 
 function get_icon_meta($query) {
   $icons = get_icons($query);
