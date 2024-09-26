@@ -39,14 +39,20 @@ function get_icon_meta($query) {
 }
 
 
-function get_icon($query) {
+function get_icon($query, $attrs = []) {
   $icon = get_icon_meta($query);
 
   if (!$icon) {
     return '';
   }
 
-  return '<i class="' . $icon->class . '"></i>';
+  $attrs['class'] = isset($attrs['class']) ? $attrs['class'] . ' ' . $icon->class : $icon->class;
+
+  $attrs_str = implode(' ', array_map(function($key, $value) {
+    return "$key=\"$value\"";
+  }, array_keys($attrs), array_values($attrs)));
+
+  return "<i $attrs_str> </i>";
 }
 
 function get_agnosticon_data($id) {
