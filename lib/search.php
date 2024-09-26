@@ -8,6 +8,14 @@ function get_icons($query = null) {
         return $icons;
     }
 
+    $exact_matches = array_filter($icons, function($icon) use ($query) {
+        return $icon->id === $query;
+    });
+
+    if (count($exact_matches)) {
+        return $exact_matches;
+    }
+
     // Synonym lookup table for common icons
     $synonym_lookup = [
         'fullscreen' => ['expand', 'maximize', 'up-right-and-down-left-from-center'],
