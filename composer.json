@@ -1,6 +1,6 @@
 {
   "name": "benignware/wp-agnosticon",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "wordpress-plugin",
   "license": "UNLICENSED",
   "description": "Universal icons for WordPress",
@@ -25,12 +25,12 @@
     "type": "package",
     "package": {
       "name": "benignware/benignware-connect",
-      "version": "v1.0.1",
+      "version": "v1.0.6",
       "type": "wordpress-plugin",
       "source": {
         "type": "git",
         "url": "https://github.com/benignware/wp-benignware-connect.git",
-        "reference": "v1.0.1"
+        "reference": "v1.0.6"
       }
     }
   }, {
@@ -51,7 +51,7 @@
   },
   "require-dev": {
     "wptrt/theme-unit-test": "dev-master",
-    "benignware/benignware-connect": ">=1.0.1",
+    "benignware/benignware-connect": ">=1.0.6",
     "wpackagist-plugin/block-manager": ">=1.2.4",
     "wpackagist-plugin/classic-editor": "*",
     "wpackagist-plugin/classic-menu-block": "*",
