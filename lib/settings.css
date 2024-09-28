@@ -1,0 +1,175 @@
+.agnosticon-settings-icon-font-group {
+  margin-bottom: 20px;
+}
+
+.agnosticon-settings-icon-font-group h2 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.agnosticon-settings-icon-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.agnosticon-settings-icon-item {
+  display: inline-block;
+  width: 100px;
+  margin: 10px;
+  text-align: center;
+}
+
+.agnosticon-settings-icon-box {
+  display: inline-block;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.agnosticon-settings-icon-item i {
+  font-size: 32px;
+  display: block;
+  font-style: normal;
+}
+
+.agnosticon-settings-icon-item span {
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.appearance_page_agnosticon-icons .popover {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 10000;
+}
+
+.appearance_page_agnosticon-icons .popover:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 10px 11px 0;
+    border-color: #ffffff transparent;
+    display: block;
+    width: 0;
+    z-index: 1;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.appearance_page_agnosticon-icons .popover:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 10px 11px 0;
+    border-color: #cccccc transparent;
+    display: block;
+    width: 0;
+    z-index: 0;
+    bottom: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.agnosticon-settings-copy-icon-button {
+  margin-top: 5px;
+  padding: 1px;
+  background-color: rgba(from #f7f7f7 r g b / 0.5);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #666;
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 14px;
+}
+
+.agnosticon-settings-copy-icon-button * {
+  font-size: inherit;
+  height: auto;
+}
+
+.agnosticon-settings-copy-icon-button:hover {
+  background-color: rgba(from #ededed r g b / 0.75);
+}
+
+.agnosticon-popover {
+  display: none;
+}
+
+.agnosticon-popover-icon {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 42px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.agnosticon-popover-header {
+  display: flex;
+}
+
+.agnosticon-popover-description {
+  margin-left: 10px;
+}
+
+.agnosticon-popover-title {
+  font-size: 16px;
+}
+
+.agnosticon-code {
+  display: block;
+  font-family: monospace;
+  background: #f7f7f7;
+  padding: 8px 16px 8px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: auto;
+  max-width: 200px;
+  max-height: 80px;
+}
+
+.agnosticon-settings-loading-message {
+  font-size: 14px;
+  color: #666;
+  margin-left: 5px;
+}
+
+.agnosticon-search-header {
+  margin-top: 10px;
+}
+
+.agnosticon-settings-spinner {
+  display: none;
+  align-items: center;
+}
+
+.spinner-label {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.agnosticon-settings.loading .agnosticon-settings-spinner {
+  display: flex;
+}
+
+.agnosticon-settings-results-count {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.agnosticon-settings.loading .agnosticon-settings-result-count {
+  display: none;
+}
