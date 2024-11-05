@@ -409,34 +409,39 @@ function _agnosticon_load() {
   $url = admin_url( 'admin-ajax.php' ) . '?action=_agnosticon_data';
   // $url = preg_replace("~(https?)://localhost(\:\d*)?~", "$1://127.0.0.1", $url);
 
-  // if (!is_admin()) {
-  //   echo 'frontend';
-  //   $resources = _agnosticon_load_resources();
-  //   $data = _agnosticon_parse_resources($resources);
-  // } else {
-    $url = admin_url( 'admin-ajax.php' ) . '?action=_agnosticon_data';
-    $url = preg_replace("~(https?)://localhost(\:\d*)?~", "$1://127.0.0.1", $url);
+  // Retrieve HTTP Basic Auth credentials from server variables
+  $username = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
+  $password = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
 
-    // $url = 'http://127.0.0.1/wp-admin/admin-ajax.php?action=theme_resources';
+  // Check if the credentials are available
+  if ($username && $password) {
+      $credentials = base64_encode("{$username}:{$password}");
+      $headers = [
+          'Authorization' => 'Basic ' . $credentials,
+      ];
+  } else {
+      $headers = [];
+  }
 
-    $response = wp_remote_get($url, [
-      'timeout' => 10
-    ]);
+  $response = wp_remote_get($url, [
+      'timeout' => 35,
+      'headers' => $headers,
+  ]);
 
   
-    if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-      $content = $response['body']; // use the content
-    } else {
-      echo 'ERROR ' . $url;
-      print_r($response);
-      exit;
-    }
+  if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+    $content = $response['body']; // use the content
+  } else {
+    echo 'ERROR ' . $url;
+    print_r($response);
+    exit;
+  }
 
-    if ($content) {
-      $data = json_decode($content);
-    } else {
-      $data = null;
-    }
+  if ($content) {
+    $data = json_decode($content);
+  } else {
+    $data = null;
+  }
   // }
 
   // print_r($data->icons);

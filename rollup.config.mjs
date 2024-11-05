@@ -21,7 +21,7 @@ export default [
                 babelHelpers: 'bundled',
                 presets: ['@babel/preset-react'],
                 exclude: 'node_modules/**'
-            })
+            }),
         ],
         external: ['react', 'react-dom'] // Exclude React from the editor bundle
     }
