@@ -396,18 +396,13 @@ function _agnosticon_load() {
     return;
   }
 
-  // Check if this is an AJAX request to prevent infinite loop
-  // if ( wp_doing_ajax() ) {
-  //   return;
-  // }
-
   // Check if the 'action' parameter is set and matches
   if ( isset( $_GET['action'] ) && $_GET['action'] === '_agnosticon_data' ) {
     return;
   }
 
   $url = admin_url( 'admin-ajax.php' ) . '?action=_agnosticon_data';
-  // $url = preg_replace("~(https?)://localhost(\:\d*)?~", "$1://127.0.0.1", $url);
+  $url = preg_replace("~(https?)://localhost(\:\d*)?~", "$1://127.0.0.1", $url);
 
   // Retrieve HTTP Basic Auth credentials from server variables
   $username = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
@@ -428,7 +423,6 @@ function _agnosticon_load() {
       'headers' => $headers,
   ]);
 
-  
   if ( is_array( $response ) && ! is_wp_error( $response ) ) {
     $content = $response['body']; // use the content
   } else {
