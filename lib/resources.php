@@ -436,9 +436,6 @@ function _agnosticon_load() {
   } else {
     $data = null;
   }
-  // }
-
-  // print_r($data->icons);
 
   $__agnosticon__ = (object) [
     'icons' => (array) $data->icons,
