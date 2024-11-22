@@ -1,6 +1,6 @@
 {
   "name": "benignware/wp-agnosticon",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "type": "wordpress-plugin",
   "license": "UNLICENSED",
   "description": "Universal icons for WordPress",

@@ -1,6 +1,6 @@
 {
   "name": "wp-agnosticon",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Universal icons for WordPress",
   "main": "index.js",
   "directories": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "build-fa": "node int/font-awesome/build-metadata.mjs"
   },
   "author": "",
   "license": "ISC",
@@ -16,9 +17,12 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-react": "^7.24.7",
+    "@fortawesome/fontawesome-free": "^6.6.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "js-yaml": "^4.1.0",
     "rollup": "^4.21.2"
   }
 }

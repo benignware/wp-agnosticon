@@ -26,6 +26,7 @@ services:
     volumes:
       - wordpress:/var/www/html
       - .:/var/www/html/wp-content/plugins/agnosticon
+      - .wp/themes:/var/www/html/wp-content/themes
     working_dir: /var/www/html
   wp:
     environment:
@@ -40,6 +41,7 @@ services:
     volumes:
       - wordpress:/var/www/html
       - .:/var/www/html/wp-content/plugins/agnosticon
+      - .wp/themes:/var/www/html/wp-content/themes
     links:
       - db:db
     command: "--info"
@@ -61,6 +63,7 @@ services:
     volumes:
       - ./composer.json:/var/www/html/composer.json
       - ./composer.lock:/var/www/html/composer.lock
+      - .wp/themes:/var/www/html/wp-content/themes
       - wordpress:/var/www/html
     links:
       - wordpress:wordpress

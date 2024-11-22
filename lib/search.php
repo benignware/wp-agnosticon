@@ -1,22 +1,62 @@
 <?php
+
 namespace benignware\wp\agnosticon;
 
-function get_icons($query = null) {
-    $icons = get_data()->icons ?? []; // Fetch icons data
+function get_variant_aliases($variants, $variant = null) {
+    // Step 1: Identify the default variant
+    $default_variant_key = null;
+    $default_variant = null;
+    foreach ($variants as $key => $variant_data) {
+        if (!empty($variant_data->default)) {
+            $default_variant_key = $key;
+            $default_variant = $variant_data;
+            break;
+        }
+    }
 
-    if (!$query) {
+    if (!$default_variant) {
+        return [];
+    }
+
+    // Step 2: Merge each variant with the default variant
+    $merged_variants = [];
+    foreach ($variants as $key => $variant_data) {
+        $merged_variants[$key] = (object) array_merge((array) $default_variant, (array) $variant_data);
+    }
+
+    // Step 3: Calculate aliases for each variant
+    foreach ($merged_variants as $key => $variant_data) {
+        $aliases = [];
+        foreach ($merged_variants as $alias_key => $alias_data) {
+            $font_family_matches = $alias_data->font_family === $variant_data->font_family;
+            $font_weight_matches = $alias_data->font_weight === $variant_data->font_weight;
+
+            if ($font_family_matches && $font_weight_matches) {
+                $aliases[] = strtolower($alias_key); // Normalize to lowercase for consistency
+            }
+        }
+        $merged_variants[$key]->aliases = $aliases; // Add aliases as a field
+    }
+    // Step 4: Determine the target variant
+    $target_variant_key = $variant ?? $default_variant_key; // Use default if $variant is null/empty
+    $target_variant = $merged_variants[$target_variant_key] ?? $default_variant;
+
+    return $target_variant->aliases ?? [];
+}
+
+
+function get_icons($query = null, $variant = '') {
+    $data = get_data();
+    $icons = $data->icons ?? [];
+    $sets = $data->sets ?? [];
+
+    if (!$query && !$variant) {
         return $icons;
     }
 
-    $exact_matches = array_filter($icons, function($icon) use ($query) {
-        return $icon->id === $query;
-    });
+    $results = [];
 
-    if (count($exact_matches)) {
-        return $exact_matches;
-    }
-
-    // Synonym lookup table for common icons
+    // Synonym lookup tables
     $synonym_lookup = [
         'fullscreen' => ['expand', 'maximize', 'up-right-and-down-left-from-center'],
         'expand' => ['fullscreen', 'maximize', 'chevron-down'],
@@ -33,71 +73,83 @@ function get_icons($query = null) {
         'play' => ['start', 'go', 'media-play'],
         'pause' => ['stop', 'media-pause', 'break'],
         'file' => ['document', 'paper', 'page'],
-        // Add more as needed
     ];
 
-    $results = [];
+    $variant_synonyms = [
+        'solid' => ['fill', 'bold'],
+        'regular' => ['outline', 'normal'],
+        'light' => ['thin'],
+        'duotone' => ['two-tone'],
+    ];
+
+    // If `variant` is provided, resolve synonyms
+    $variant_set = [];
+    if ($variant) {
+        $variant_set[] = strtolower($variant);
+        if (isset($variant_synonyms[$variant])) {
+            $variant_set = array_merge($variant_set, $variant_synonyms[$variant]);
+        }
+    }
 
     // If query is a string, turn it into an array of tokens
     if (is_string($query)) {
-        $query = explode(' ', strtolower($query));
+        $query = array_filter(explode(' ', strtolower($query)));
     }
 
-    // Filter icons based on query and synonym lookup
-    $icons = array_filter($icons, function($icon) use ($query, $synonym_lookup, &$results) {
+    // Filter icons based on query and variant
+    $icons = array_filter($icons, function($icon) use ($sets, $query, $variant_set, $synonym_lookup, &$results) {
         $icon_name = strtolower($icon->id);
         $icon_tokens = explode('-', $icon_name); // Split icon name into tokens
-        $total_icon_tokens = count($icon_tokens); // Total tokens in the icon name
-        
-        // Initialize match count and weighted relevance
-        $matched_tokens = 0;
-        $weighted_score = 0;
+        $icon_variant = $icon->variant ? strtolower($icon->variant) : '';
+        $set = $sets[$icon->prefix] ?? null;
+        // Get aliases for the current set's variants
+        $aliases = $set ? get_variant_aliases($set->variants, $icon_variant) : [];
 
-        // Create a set for the query tokens for faster lookup
-        $query_set = array_flip($query); // Create a set for faster existence checking
+        // Check if any alias matches the variant set
+        if (count($variant_set) && !array_intersect($variant_set, $aliases)) {
+            return false; // Skip this icon if no alias matches
+        }
 
-        // Check for exact match first
+        if (!count($query)) {
+            $results[] = $icon;
+            return true;
+        }
+
+        // Check for exact match
         if (in_array($icon_name, $query)) {
-            // If the icon name matches the query exactly
             $icon->relevance = 1; // Exact match relevance
             $results[] = $icon;
             return true;
         }
 
-        // Check for matches between icon tokens and query tokens
+        // Query token matching and synonym checking
+        $matched_tokens = 0;
+        $weighted_score = 0;
         foreach ($icon_tokens as $icon_token) {
             $index = array_search($icon_token, $query);
             if ($index !== false) {
-                // Weight based on the position (lower index = higher weight)
                 $weighted_score += (1 / ($index + 1)); // Higher weight for earlier matches
                 $matched_tokens++;
             }
         }
 
-        // Calculate the relevance score based on weighted score
-        $relevance = $total_icon_tokens > 0 ? ($weighted_score / $total_icon_tokens) : 0;
-
-        // Check for synonyms and adjust relevance accordingly
-        if ($matched_tokens === 0) {
+        // Check for synonyms if no direct match
+        if ($matched_tokens === 0 && $query) {
             foreach ($query as $token) {
                 if (isset($synonym_lookup[$token])) {
                     foreach ($synonym_lookup[$token] as $synonym) {
                         if (in_array($synonym, $icon_tokens)) {
-                            // Synonyms get a lower relevance score
-                            $relevance = max($relevance, 0.3); // Set relevance for a synonym match (0.3)
+                            $weighted_score = max($weighted_score, 0.3); // Lower weight for synonym match
                         }
                     }
                 }
             }
         }
 
-        // If the matched token count is less than the icon's token count,
-        // penalize synonyms to ensure they don't overshadow exact matches
-        if ($matched_tokens < $total_icon_tokens) {
-            $relevance *= ($matched_tokens / $total_icon_tokens);
-        }
+        // Calculate relevance
+        $total_icon_tokens = count($icon_tokens);
+        $relevance = $total_icon_tokens > 0 ? ($weighted_score / $total_icon_tokens) : 0;
 
-        // Only add to results if relevance is positive
         if ($relevance > 0) {
             $icon->relevance = $relevance;
             $results[] = $icon;
@@ -107,7 +159,7 @@ function get_icons($query = null) {
         return false;
     });
 
-    // Sort the results by relevance in descending order
+    // Sort results by relevance
     usort($results, function($a, $b) {
         return $b->relevance <=> $a->relevance;
     });
