@@ -1,6 +1,6 @@
 {
   "name": "wp-agnosticon",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Universal icons for WordPress",
   "main": "index.js",
   "directories": {

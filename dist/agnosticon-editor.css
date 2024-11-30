@@ -53,7 +53,7 @@
 
 .agnosticon-list:not(.is-grid) li::marker,
 .agnosticon-list.is-grid li:before {
-  content: var(--agnosticon-char, '•');
+  content: var(--agnosticon-code, '•');
   font-family: var(--agnosticon-font-family, monospace);
   font-weight: var(--agnosticon-font-weight, normal);
   font-size: calc(max(var(--agnosticon-font-size, inherit), 1em));

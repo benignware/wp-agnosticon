@@ -64,13 +64,20 @@ import IconControl from "./IconControl.jsx";
 
       const applyFormat = () => {
         let newValue;
-        const icon = name ? window.agnosticon?.find(name) : null;
+        const iconData = name ? window.agnosticon?.find(name) : null;
+        
+        try {
+          iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
+        } catch(e) {
+          iconData.code = iconData?.char;
+        }
 
         const newAttributes = {
           [attributeName]: name,
-          'data-agnosticon-char': icon?.char ? String.fromCodePoint(`0x${icon.char}`) : '',
+          'data-agnosticon-char': iconData?.char || '',
+          'data-agnosticon-code': iconData?.code || '',
           // 'data-agnosticon-id': icon?.id || '',
-          style: icon?.style || '',
+          style: iconData?.style || '',
           // class: icon?.class || '',
           // role: 'img',
           // title: icon?.name || name,

@@ -255,17 +255,25 @@
       className: `${COMPONENT_SLUG}__popover`
     }, /*#__PURE__*/React.createElement("ul", {
       className: `${COMPONENT_SLUG}__results-list`
-    }, searchResults.map(icon => {
-      const code = String.fromCodePoint(`0x${icon.char}`);
+    }, searchResults.map(iconData => {
+      try {
+        iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
+      } catch (e) {
+        iconData.code = iconData?.char;
+      }
+      const iconHtml = `<i
+                              style="${iconData.style}"
+                              data-agnosticon-code="${iconData.code}"
+                            ></i>`;
       return /*#__PURE__*/React.createElement("li", {
-        key: icon.id,
+        key: iconData.id,
         className: `${COMPONENT_SLUG}__results-list-item`,
-        onClick: () => handleSelect(icon)
+        onClick: () => handleSelect(iconData)
       }, /*#__PURE__*/React.createElement("label", {
         dangerouslySetInnerHTML: {
-          __html: `<i class="${icon.class}" style="${icon.style}">${code}</i>`
+          __html: iconHtml
         }
-      }), icon.name);
+      }), iconData.name);
     }))));
   };
   const IconControl = ({
@@ -379,7 +387,7 @@
         slug: 'big'
       }];
       return /*#__PURE__*/React.createElement(Fragment, null, /*#__PURE__*/React.createElement(InspectorControls, null, /*#__PURE__*/React.createElement(PanelBody, {
-        title: __("Settings", "agnosticon"),
+        title: __("Icon", "agnosticon"),
         initialOpen: true
       }, /*#__PURE__*/React.createElement(IconControl, {
         value: icon.id,
@@ -548,9 +556,9 @@
       if (iconData) {
         iconData = Object.fromEntries(Object.entries(iconData).map(([key, value]) => [camelCase(key), value]));
         try {
-          iconData.code = String.fromCodePoint(`0x${icon.char}`);
+          iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
         } catch (e) {
-          iconData.code = char;
+          iconData.code = iconData?.char;
         }
       }
       const data = {
@@ -561,8 +569,8 @@
         ...props.wrapperProps,
         className,
         style: {
-          '--agnosticon-char': data.char ? '"' + String.fromCodePoint(`0x${data.char}`) + '"' : '',
-          '--agnosticon-code': data.code ? data.code : '',
+          '--agnosticon-char': data.char || '',
+          '--agnosticon-code': data.code ? `'${data.code}'` : '',
           '--agnosticon-font-family': data.fontFamily,
           '--agnosticon-font-weight': data.fontWeight,
           '--agnosticon-font-size': `${data.size}px`,
@@ -646,12 +654,18 @@
         }, [activeValue]);
         const applyFormat = () => {
           let newValue;
-          const icon = name ? window.agnosticon?.find(name) : null;
+          const iconData = name ? window.agnosticon?.find(name) : null;
+          try {
+            iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
+          } catch (e) {
+            iconData.code = iconData?.char;
+          }
           const newAttributes = {
             [attributeName]: name,
-            'data-agnosticon-char': icon?.char ? String.fromCodePoint(`0x${icon.char}`) : '',
+            'data-agnosticon-char': iconData?.char || '',
+            'data-agnosticon-code': iconData?.code || '',
             // 'data-agnosticon-id': icon?.id || '',
-            style: icon?.style || ''
+            style: iconData?.style || ''
             // class: icon?.class || '',
             // role: 'img',
             // title: icon?.name || name,

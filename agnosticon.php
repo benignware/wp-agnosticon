@@ -3,7 +3,7 @@
  * Plugin Name: Agnosticon
  * Plugin URI: http://github.com/benignware/wp-agnosticon
  * Description: Universal icons for WordPress
- * Version: 0.0.13
+ * Version: 0.0.14
  * Author: Rafael Nowrotek, Benignware
  * Author URI: http://benignware.com
  * License: MIT

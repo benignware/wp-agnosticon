@@ -58,21 +58,30 @@ const IconAutoSuggest = ({ value, onChange }) => {
                     className={`${COMPONENT_SLUG}__popover`}
                 >
                     <ul className={`${COMPONENT_SLUG}__results-list`}>
-                        {searchResults.map((icon) => {
-                            const code = String.fromCodePoint(`0x${icon.char}`);
+                        {searchResults.map((iconData) => {
+                            try {
+                              iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
+                            } catch(e) {
+                              iconData.code = iconData?.char;
+                            }
+
+                            const iconHtml = `<i
+                              style="${iconData.style}"
+                              data-agnosticon-code="${iconData.code}"
+                            ></i>`;
 
                             return (
                                 <li
-                                    key={icon.id}
+                                    key={iconData.id}
                                     className={`${COMPONENT_SLUG}__results-list-item`}
-                                    onClick={() => handleSelect(icon)}
+                                    onClick={() => handleSelect(iconData)}
                                 >
                                     <label
                                         dangerouslySetInnerHTML={{
-                                            __html: `<i class="${icon.class}" style="${icon.style}">${code}</i>`,
+                                            __html: iconHtml,
                                         }}
                                     ></label>
-                                    {icon.name}
+                                    {iconData.name}
                                 </li>
                             );
                         })}

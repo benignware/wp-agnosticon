@@ -109,11 +109,11 @@ const withListInspectorControls = (BlockEdit) => {
         return (
             <Fragment>
               <InspectorControls>
-                <PanelBody title={__("Settings", "agnosticon")} initialOpen={true}>
-                    <IconControl
-                        value={icon.id}
-                        onChange={(newIconId) => setAttributes({ icon: { ...icon, id: newIconId } })}
-                    />
+                <PanelBody title={__("Icon", "agnosticon")} initialOpen={true}>
+                  <IconControl
+                      value={icon.id}
+                      onChange={(newIconId) => setAttributes({ icon: { ...icon, id: newIconId } })}
+                  />
                 </PanelBody>
             </InspectorControls>
             <InspectorControls group="styles">
@@ -288,10 +288,10 @@ const withIconListWrapperProps = createHigherOrderComponent((BlockListBlock) => 
           )));
       
           try {
-            iconData.code = String.fromCodePoint(`0x${icon.char}`);
+            iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
           } catch(e) {
-            iconData.code = char;
-          }
+            iconData.code = iconData?.char;
+          }  
         }
 
         const data = { ...iconData, ...icon };
@@ -300,8 +300,8 @@ const withIconListWrapperProps = createHigherOrderComponent((BlockListBlock) => 
             ...props.wrapperProps,
             className,
             style: {
-                '--agnosticon-char': data.char ? '"' + String.fromCodePoint(`0x${data.char}`) + '"' : '',
-                '--agnosticon-code': data.code ? data.code : '',
+                '--agnosticon-char': data.char || '',
+                '--agnosticon-code': data.code ? `'${data.code}'` : '',
                 '--agnosticon-font-family': data.fontFamily,
                 '--agnosticon-font-weight': data.fontWeight,
                 '--agnosticon-font-size': `${data.size}px`,
