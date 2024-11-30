@@ -286,6 +286,12 @@ const withIconListWrapperProps = createHigherOrderComponent((BlockListBlock) => 
           iconData = Object.fromEntries(Object.entries(iconData).map(([key, value]) => (
             [camelCase(key), value]
           )));
+      
+          try {
+            iconData.code = String.fromCodePoint(`0x${icon.char}`);
+          } catch(e) {
+            iconData.code = char;
+          }
         }
 
         const data = { ...iconData, ...icon };

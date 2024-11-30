@@ -123,9 +123,13 @@ import IconControl from "./IconControl.jsx";
           />
           {isPopoverOpen && (
               <Popover
+                className="icon-control__popover"
                 placement="bottom"
                 focusOnMount={ true }
                 anchor={ popoverAnchor }
+                shift={true}
+                noArrow={false}
+                offset={10}
               >
                  <VStack spacing={ 1 } style={{ width: '300px', padding: '10px' }}>
                     <IconControl

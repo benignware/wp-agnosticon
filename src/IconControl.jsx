@@ -1,18 +1,20 @@
 import './IconControl.css';
 
 const { __ } = wp.i18n;
-const { TextControl } = wp.components;
-const { useState } = wp.element;
+const { TextControl, Popover } = wp.components;
+const { useState, useRef } = wp.element;
 
 const COMPONENT_SLUG = 'icon-control';
 
-// IconAutoSuggest component for icon search.
 const IconAutoSuggest = ({ value, onChange }) => {
     const [searchResults, setSearchResults] = useState([]);
+    const [isPopoverVisible, setIsPopoverVisible] = useState(false);
+    const inputRef = useRef(null);
 
     const handleSearch = (search) => {
         if (!search) {
             setSearchResults([]);
+            setIsPopoverVisible(false);
             return;
         }
 
@@ -21,6 +23,7 @@ const IconAutoSuggest = ({ value, onChange }) => {
             .then((response) => {
                 if (response.success) {
                     setSearchResults(response.data);
+                    setIsPopoverVisible(response.data.length > 0);
                 }
             })
             .catch((error) => {
@@ -29,59 +32,59 @@ const IconAutoSuggest = ({ value, onChange }) => {
     };
 
     const handleSelect = (iconData) => {
-      console.log('SELECT iconData:', iconData);
         onChange(iconData.id);
         setSearchResults([]);
+        setIsPopoverVisible(false);
     };
 
     return (
-      <div className={`${COMPONENT_SLUG}__wrapper`}>
-        <TextControl
-          label={__("Icon", "agnosticon")}
-          value={value}
-          onChange={(newValue) => {
-            console.log('newValue:', newValue);
-              onChange(newValue);
-              handleSearch(newValue);
-          }}
-          placeholder={__("Search for an icon...", "menu-plus")}
-          autoComplete="off"
-          className={`${COMPONENT_SLUG}__input`}
-        />
-        {searchResults.length > 0 && (
-          <div className={`${COMPONENT_SLUG}__results`}>
-            <ul className={`${COMPONENT_SLUG}__results-list`}>
-                {searchResults.map((icon) => {
-                  const code = String.fromCodePoint(`0x${icon.char}`);
-                  const html = `<i
-                    data-agnosticon-char="${code}"
-                    class="${icon.class}"
-                    style="${icon.style}"
-                  > </i>`;
-                  
-                  return (
-                    <li 
-                        key={icon.id} 
-                        className={`${COMPONENT_SLUG}__results-list-item`}
-                        onClick={() => handleSelect(icon)}
-                    >
-                      <label dangerouslySetInnerHTML={{ __html: html }}></label> {icon.name}
-                    </li>
-                  )
-                })}
-            </ul>
-          </div>
-        )}
-      </div>
+        <div className={`${COMPONENT_SLUG}__wrapper`}>
+            <TextControl
+                ref={inputRef}
+                label={__("Icon", "agnosticon")}
+                value={value}
+                onChange={(newValue) => {
+                    onChange(newValue);
+                    handleSearch(newValue);
+                }}
+                placeholder={__("Search for an icon...", "menu-plus")}
+                autoComplete="off"
+                className={`${COMPONENT_SLUG}__input`}
+            />
+            {isPopoverVisible && (
+                <Popover
+                    anchorRef={inputRef?.current?.inputRef}
+                    onClose={() => setIsPopoverVisible(false)}
+                    className={`${COMPONENT_SLUG}__popover`}
+                >
+                    <ul className={`${COMPONENT_SLUG}__results-list`}>
+                        {searchResults.map((icon) => {
+                            const code = String.fromCodePoint(`0x${icon.char}`);
+
+                            return (
+                                <li
+                                    key={icon.id}
+                                    className={`${COMPONENT_SLUG}__results-list-item`}
+                                    onClick={() => handleSelect(icon)}
+                                >
+                                    <label
+                                        dangerouslySetInnerHTML={{
+                                            __html: `<i class="${icon.class}" style="${icon.style}">${code}</i>`,
+                                        }}
+                                    ></label>
+                                    {icon.name}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </Popover>
+            )}
+        </div>
     );
 };
 
-// Exporting IconControl as the main component for use in other parts of the application
 const IconControl = ({ label, value, onChange }) => (
-    <IconAutoSuggest
-        value={value}
-        onChange={onChange}
-    />
+    <IconAutoSuggest value={value} onChange={onChange} />
 );
 
 export default IconControl;

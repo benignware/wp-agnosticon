@@ -201,74 +201,73 @@
     __: __$1
   } = wp.i18n;
   const {
-    TextControl: TextControl$1
+    TextControl: TextControl$1,
+    Popover
   } = wp.components;
   const {
-    useState
+    useState,
+    useRef
   } = wp.element;
   const COMPONENT_SLUG = 'icon-control';
-
-  // IconAutoSuggest component for icon search.
   const IconAutoSuggest = ({
     value,
     onChange
   }) => {
     const [searchResults, setSearchResults] = useState([]);
+    const [isPopoverVisible, setIsPopoverVisible] = useState(false);
+    const inputRef = useRef(null);
     const handleSearch = search => {
       if (!search) {
         setSearchResults([]);
+        setIsPopoverVisible(false);
         return;
       }
       fetch(`${window.location.origin}/wp-admin/admin-ajax.php?action=agnosticon_search&search=${encodeURIComponent(search)}`).then(response => response.json()).then(response => {
         if (response.success) {
           setSearchResults(response.data);
+          setIsPopoverVisible(response.data.length > 0);
         }
       }).catch(error => {
         console.error('AJAX error:', error);
       });
     };
     const handleSelect = iconData => {
-      console.log('SELECT iconData:', iconData);
       onChange(iconData.id);
       setSearchResults([]);
+      setIsPopoverVisible(false);
     };
     return /*#__PURE__*/React.createElement("div", {
       className: `${COMPONENT_SLUG}__wrapper`
     }, /*#__PURE__*/React.createElement(TextControl$1, {
+      ref: inputRef,
       label: __$1("Icon", "agnosticon"),
       value: value,
       onChange: newValue => {
-        console.log('newValue:', newValue);
         onChange(newValue);
         handleSearch(newValue);
       },
       placeholder: __$1("Search for an icon...", "menu-plus"),
       autoComplete: "off",
       className: `${COMPONENT_SLUG}__input`
-    }), searchResults.length > 0 && /*#__PURE__*/React.createElement("div", {
-      className: `${COMPONENT_SLUG}__results`
+    }), isPopoverVisible && /*#__PURE__*/React.createElement(Popover, {
+      anchorRef: inputRef?.current?.inputRef,
+      onClose: () => setIsPopoverVisible(false),
+      className: `${COMPONENT_SLUG}__popover`
     }, /*#__PURE__*/React.createElement("ul", {
       className: `${COMPONENT_SLUG}__results-list`
     }, searchResults.map(icon => {
       const code = String.fromCodePoint(`0x${icon.char}`);
-      const html = `<i
-                    data-agnosticon-char="${code}"
-                    class="${icon.class}"
-                    style="${icon.style}"
-                  > </i>`;
       return /*#__PURE__*/React.createElement("li", {
         key: icon.id,
         className: `${COMPONENT_SLUG}__results-list-item`,
         onClick: () => handleSelect(icon)
       }, /*#__PURE__*/React.createElement("label", {
         dangerouslySetInnerHTML: {
-          __html: html
+          __html: `<i class="${icon.class}" style="${icon.style}">${code}</i>`
         }
-      }), " ", icon.name);
+      }), icon.name);
     }))));
   };
-
-  // Exporting IconControl as the main component for use in other parts of the application
   const IconControl = ({
     label,
     value,
@@ -548,6 +547,11 @@
       let iconData = icon.id ? window.agnosticon.find(icon.id) : null;
       if (iconData) {
         iconData = Object.fromEntries(Object.entries(iconData).map(([key, value]) => [camelCase(key), value]));
+        try {
+          iconData.code = String.fromCodePoint(`0x${icon.char}`);
+        } catch (e) {
+          iconData.code = char;
+        }
       }
       const data = {
         ...iconData,
@@ -691,9 +695,13 @@
           onClick: handleOpenPopover,
           isActive: isObjectActive
         }), isPopoverOpen && /*#__PURE__*/React.createElement(Popover, {
+          className: "icon-control__popover",
           placement: "bottom",
           focusOnMount: true,
-          anchor: popoverAnchor
+          anchor: popoverAnchor,
+          shift: true,
+          noArrow: false,
+          offset: 10
         }, /*#__PURE__*/React.createElement(VStack, {
           spacing: 1,
           style: {
