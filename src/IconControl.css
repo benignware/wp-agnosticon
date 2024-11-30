@@ -1,0 +1,36 @@
+.icon-control__wrapper {
+  position: relative;
+}
+
+.icon-control__results {
+  position: absolute;
+  left: auto;
+  top: auto;
+  z-index: 1000;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.icon-control__results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.icon-control__results-list-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.icon-control__results-list-item label {
+  display: inline-flex;
+  align-items: center;
+  width: 1.3em;
+  height: 1.3em;
+  font-size: 1em;
+}

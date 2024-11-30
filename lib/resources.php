@@ -148,7 +148,7 @@ function _agnosticon_parse_resources($resources) {
       $entity = convert_unicode_to_entity($char);
 
       foreach ($selectors as $selector) {
-        $has_before = substr_compare($selector, ':before', -strlen(':before')) === 0;
+        $has_before = substr_compare($selector, ':before', - strlen(':before')) === 0;
 
         if (!$has_before) {
           continue;
@@ -156,9 +156,11 @@ function _agnosticon_parse_resources($resources) {
 
         $id = trim(substr($selector, 0, strlen($selector) - 7));
         $id = trim($id, ':');
+        
         $icons[$id] = (object) [
           'id' => $id,
-          'char' => $char,
+          'char' => stripslashes($char),
+          'code' => '0x' . stripslashes($char),
           'entity' => $entity,
         ];
       }
@@ -182,7 +184,7 @@ function _agnosticon_parse_resources($resources) {
     return $result;
   }, []);
 
-  $icons = array_reduce($icon_ids, function($result, $id) use ($prefixes, $icons) {
+  $icons = array_reduce($icon_ids, function($result, $id) use ($prefixes, $icons, $default_variant_name) {
     $icon = $icons[$id];
 
     $prefix_matches = array_values(array_filter($prefixes, function($prefix) use ($id) {
@@ -192,10 +194,12 @@ function _agnosticon_parse_resources($resources) {
     if (count($prefix_matches) > 0) {
       $icon_prefix = $prefix_matches[0];
       $icon_name = trim(substr($id, strlen($icon_prefix)), '-');
+      $icon_id = $icon_prefix . ':' . $icon_name;
 
-      $result[$id] = (object) array_merge(
+      $result[$icon_id] = (object) array_merge(
         (array) $icon,
         [
+          'id' => $icon_id,
           'prefix' => $icon_prefix,
           'name' => $icon_name
         ]
@@ -240,9 +244,15 @@ function _agnosticon_parse_resources($resources) {
       $selector = preg_replace('~\s*\{(.*)~si', '', $prefix_match[0]);
       $selectors = array_map('trim', explode(',', $selector));
 
-      $variants = array_reduce($selectors, function($result, $selector) use ($prefix, $font_family, $font_weight) {
+      $variants = array_reduce($selectors, function($result, $selector) use ($icons, $prefix, $font_family, $font_weight, $default_variant_name) {
         $selector = trim($selector);
+        $selector = preg_replace('~\s*::?before~', '', $selector);
         $name = preg_replace('~^\.' . preg_quote($prefix, '~') . '[-]?~', '', $selector) ?: '';
+        
+        if (isset($icons[$prefix . ':' . $name])) {
+          return $result;
+        }
+        
         $class = preg_replace('~^\.~', '', $selector);
         $is_default = $name === '';
         $name = $is_default ? $default_variant_name : $name;
@@ -330,24 +340,28 @@ function _agnosticon_parse_resources($resources) {
     $default_variant = array_values(array_filter($variants, function($variant) {
       return $variant->default;
     }))[0] ?? null;
+
+    $default_variant = $default_variant ?: (count($variants) > 0 ? $variants[0] : null);
+
+    // if (!$default_variant) {
+    //   return $result;
+    // }
     
     $variant_names = [$default_variant->name];
     $variant_names = apply_filters('agnosticon_variants', $variant_names, $icon, $icon_set);
     
     foreach ($variant_names as $name) {
       $is_default = $name === $default_variant->name || count($variant_names) === 1;
-      $id = $icon->id . ($is_default ? '' : '-' . $name);
+      $variant_id = $icon->id . (($is_default || !$name) ? '' : ':' . $name);
 
-      $result[$id] = (object) array_merge((array) $icon, [
-        'id' => $id,
+      $result[$variant_id] = (object) array_merge((array) $icon, [
+        'id' => $variant_id,
         'variant' => $name
       ]);
     }
 
     return $result;
   }, []);
-
-  $all_icons = [];
 
   foreach ($icons as $icon) {
     if (!isset($icon_sets[$icon->prefix])) {
@@ -380,7 +394,7 @@ function _agnosticon_parse_resources($resources) {
             'font-weight' => $variant->font_weight
           ] : [],
           isset($variant->font_family) ? [
-            'font-family' => "'" . $variant->font_family . "'"
+            'font-family' => $variant->font_family
           ] : [],
         );
       }
@@ -430,7 +444,7 @@ function _agnosticon_parse_resources($resources) {
       $variant = $variant_name ? $icon_set->variants[$variant_name] : null;
 
       if ($variant) {
-        $props['font-family'] = "'" . $variant->font_family . "'";
+        $props['font-family'] = $variant->font_family;
 
         if (!isset($props['font-weight']) && isset($variant->font_weight)) {
           $props['font-weight'] = $variant->font_weight;
@@ -438,38 +452,23 @@ function _agnosticon_parse_resources($resources) {
       }
     }
 
-    $icon_class = implode(' ', array_unique($icon_classes));
+    $default_font = array_values($icon_set->fonts)[0];
+    $font_family = $props['font-family'] ?: ($default_font ? $default_font->name : null);
+    $font_weight = $props['font-weight'] ?: $default_font->weights[0] ?? null;
+
+    $icon_class = trim(implode(' ', array_unique($icon_classes)));
     
+    $icon->char = stripslashes($icon->char);
     $icon->class = $icon_class;
-    $icon->font_family = $props['font-family'];
-    $icon->font_weight = $props['font-weight'];
+    $icon->font_family = $font_family;
+    $icon->font_weight = $font_weight;
+    $icon->style = sprintf("font-family: '%s'; font-weight: %s", $icon->font_family, $icon->font_weight);
 
-    $icon->style = implode('; ', array_map(function($key, $value) {
-      return "$key: $value";
-    }, array_keys($props), array_values($props)));
-
-    $all_icons[$icon->id] = $icon;
-
-    foreach ($icon_set->variants as $selector => $variant) {
-      $class = preg_replace('~^\.~', '', $selector);
-      
-      if ($variant->weight && $variant->family === trim($icon->font_family, "'")) {
-        if ($variant->weight != $icon->font_weight) {
-          $id = $icon->id . '-' . $variant->name;
-          
-          $all_icons[$id] = (object) array_merge((array) $icon, [
-            'id' => $id,
-            'font_weight' => $variant->weight,
-            'class' => $icon->class . ' ' . $variant->class,
-            'style' => sprintf('font-family: %s; font-weight: %s', $icon->font_family, $variant->weight)
-          ]);
-        }
-      }
-    }
+    $icons[$icon->id] = $icon;
   }
 
   $data = (object) [
-    'icons' => $all_icons,
+    'icons' => $icons,
     'sets' => $icon_sets,
   ];
 
@@ -513,7 +512,7 @@ function _agnosticon_load() {
   }
 
   $response = wp_remote_get($url, [
-      'timeout' => 35,
+      'timeout' => 5,
       'headers' => $headers,
   ]);
   

@@ -36,7 +36,10 @@ function get_fa_metadata($name = null) {
     return $metadata;
 }
 
-add_filter('agnosticon_variants', function($variants, $icon) {
+function agnosticon_variants_fa($variants, $icon) {
+    if ($icon->prefix !== 'fa') {
+        return $variants;
+    }
     // Extract the icon name without the prefix
     $name = $icon->name;
 
@@ -56,4 +59,6 @@ add_filter('agnosticon_variants', function($variants, $icon) {
     }
 
     return $variants;
-}, 10, 2);
+}
+
+add_filter('agnosticon_variants', 'benignware\wp\agnosticon\agnosticon_variants_fa', 10, 2);

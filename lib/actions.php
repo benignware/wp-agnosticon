@@ -50,10 +50,7 @@ function agnosticon_css() {
 
   echo $css;
   echo "
-    i[data-agnosticon-char]:before {
-      display: inline-block;
-      content: attr(data-agnosticon-char);
-    }
+
   ";
 
   die();
@@ -64,9 +61,10 @@ add_action( 'wp_ajax_nopriv_agnosticon_css', 'benignware\wp\agnosticon\agnostico
 
 
 function agnosticon_search_action() {
-  $s = stripslashes( $_GET['search'] );
+  $s = stripslashes( $_GET['search'] ?? '' );
+  $v = stripslashes( $_GET['variant'] ?? '' );
 
-  $icons = get_icons($s);
+  $icons = get_icons($s, $v);
 
 	wp_send_json_success( $icons );
 }

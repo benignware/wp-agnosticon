@@ -1,6 +1,6 @@
 {
   "name": "wp-agnosticon",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Universal icons for WordPress",
   "main": "index.js",
   "directories": {
@@ -23,6 +23,10 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "js-yaml": "^4.1.0",
-    "rollup": "^4.21.2"
+    "rollup": "^4.21.2",
+    "rollup-plugin-css-only": "^4.5.2"
+  },
+  "dependencies": {
+    "change-case": "^5.4.4"
   }
 }

@@ -1,0 +1,11 @@
+[data-agnosticon-char] {
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+}
+
+[data-agnosticon-char]:before {
+  display: inline-block;
+  content: attr(data-agnosticon-char);
+}

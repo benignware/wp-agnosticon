@@ -2,6 +2,38 @@
 
 namespace benignware\wp\agnosticon;
 
+function parse_query($query) {
+    // Initialize the parts
+    $prefix = '';
+    $name = '';
+    $variant = '';
+
+    // Split the query by ':'
+    $parts = is_array($query) ? $query : explode(':', $query);
+
+    // Determine the prefix, name, and variant
+    if (count($parts) === 3) {
+        // Three parts: prefix, name, and variant
+        $prefix = trim($parts[0]);
+        $name = trim($parts[1]);
+        $variant = trim($parts[2]);
+    } elseif (count($parts) === 2) {
+        // Two parts: prefix and name (variant omitted)
+        $prefix = trim($parts[0]);  // First part is the prefix
+        $name = trim($parts[1]);     // Second part is the name
+    } else {
+        // Only one part: name (prefix and variant omitted)
+        $name = trim($parts[0]);
+    }
+
+    return [
+        $prefix,
+        $name,
+        $variant,
+    ];
+}
+
+
 function get_variant_aliases($variants, $variant = null) {
     // Step 1: Identify the default variant
     $default_variant_key = null;
@@ -44,8 +76,10 @@ function get_variant_aliases($variants, $variant = null) {
     return $target_variant->aliases ?? [];
 }
 
+function get_icons($query = null) {
+    list($prefix, $name, $variant) = parse_query($query);
+    $query = $name;
 
-function get_icons($query = null, $variant = '') {
     $data = get_data();
     $icons = $data->icons ?? [];
     $sets = $data->sets ?? [];
@@ -93,12 +127,12 @@ function get_icons($query = null, $variant = '') {
 
     // If query is a string, turn it into an array of tokens
     if (is_string($query)) {
-        $query = array_filter(explode(' ', strtolower($query)));
+        $query = array_filter(preg_split("/[^\-:_A-Za-z0-9]+/", strtolower($query)));
     }
 
     // Filter icons based on query and variant
     $icons = array_filter($icons, function($icon) use ($sets, $query, $variant_set, $synonym_lookup, &$results) {
-        $icon_name = strtolower($icon->id);
+        $icon_name = $icon->name;
         $icon_tokens = explode('-', $icon_name); // Split icon name into tokens
         $icon_variant = $icon->variant ? strtolower($icon->variant) : '';
         $set = $sets[$icon->prefix] ?? null;
@@ -125,6 +159,17 @@ function get_icons($query = null, $variant = '') {
         // Query token matching and synonym checking
         $matched_tokens = 0;
         $weighted_score = 0;
+
+        // Leading character matching
+        foreach ($query as $query_token) {
+            // Check if the icon name starts with the query token
+            if (strpos($icon_name, $query_token) === 0) {
+                $weighted_score += 1; // Increase score for leading character match
+                $matched_tokens++;
+                break; // No need to check further for leading matches
+            }
+        }
+
         foreach ($icon_tokens as $icon_token) {
             $index = array_search($icon_token, $query);
             if ($index !== false) {
