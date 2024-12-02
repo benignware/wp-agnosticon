@@ -89,7 +89,7 @@ function render_block_list($content, $block) {
     $styles = [
         '--agnosticon-char' => $char,
         '--agnosticon-code' => $code,
-        '--agnosticon-font-family' => $icon_data->font_family ?? '',
+        '--agnosticon-font-family' => '"' . $icon_data->font_family . '"',
         '--agnosticon-font-weight' => $icon_data->font_weight ?? '',
         '--agnosticon-font-size' => $icon_data->size ? "{$icon_data->size}px" : '',
         '--agnosticon-color' => $icon_data->color ?? '',

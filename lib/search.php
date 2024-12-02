@@ -2,7 +2,10 @@
 
 namespace benignware\wp\agnosticon;
 
-function parse_query($query) {
+function parse_icon_query($query) {
+    $variant_synonyms = get_icon_variant_synonyms();
+    $valid_variants = array_merge(array_keys($variant_synonyms), ...array_values($variant_synonyms));
+
     // Initialize the parts
     $prefix = '';
     $name = '';
@@ -11,18 +14,33 @@ function parse_query($query) {
     // Split the query by ':'
     $parts = is_array($query) ? $query : explode(':', $query);
 
-    // Determine the prefix, name, and variant
     if (count($parts) === 3) {
         // Three parts: prefix, name, and variant
         $prefix = trim($parts[0]);
         $name = trim($parts[1]);
-        $variant = trim($parts[2]);
+        $variant_candidate = trim($parts[2]);
+
+        if (in_array(strtolower($variant_candidate), $valid_variants, true)) {
+            $variant = $variant_candidate;
+        } else {
+            $name .= ':' . $variant_candidate; // Treat it as part of the name if invalid
+        }
     } elseif (count($parts) === 2) {
-        // Two parts: prefix and name (variant omitted)
-        $prefix = trim($parts[0]);  // First part is the prefix
-        $name = trim($parts[1]);     // Second part is the name
-    } else {
-        // Only one part: name (prefix and variant omitted)
+        // Two parts: either prefix:name or name:variant
+        $first_part = trim($parts[0]);
+        $second_part = trim($parts[1]);
+
+        if (in_array(strtolower($second_part), $valid_variants, true)) {
+            // name:variant
+            $name = $first_part;
+            $variant = $second_part;
+        } else {
+            // prefix:name
+            $prefix = $first_part;
+            $name = $second_part;
+        }
+    } elseif (count($parts) === 1) {
+        // Single part: it's the name
         $name = trim($parts[0]);
     }
 
@@ -76,9 +94,11 @@ function get_variant_aliases($variants, $variant = null) {
     return $target_variant->aliases ?? [];
 }
 
-function get_icons($query = null) {
-    list($prefix, $name, $variant) = parse_query($query);
+
+function get_icons($query = null, $variant = null) {
+    list($prefix, $name, $query_variant) = parse_icon_query($query);
     $query = $name;
+    $variant = $variant ?: $query_variant;
 
     $data = get_data();
     $icons = $data->icons ?? [];
@@ -91,32 +111,10 @@ function get_icons($query = null) {
     $results = [];
 
     // Synonym lookup tables
-    $synonym_lookup = [
-        'fullscreen' => ['expand', 'maximize', 'up-right-and-down-left-from-center'],
-        'expand' => ['fullscreen', 'maximize', 'chevron-down'],
-        'cart' => ['basket', 'shopping-cart'],
-        'delete' => ['trash', 'remove', 'bin'],
-        'home' => ['house', 'main'],
-        'search' => ['find', 'magnifying-glass', 'lookup'],
-        'settings' => ['gear', 'preferences', 'configure'],
-        'user' => ['person', 'account', 'profile'],
-        'edit' => ['pencil', 'modify', 'update'],
-        'save' => ['disk', 'store', 'archive'],
-        'arrow' => ['chevron', 'caret', 'triangle'],
-        'close' => ['cross', 'x', 'cancel'],
-        'play' => ['start', 'go', 'media-play'],
-        'pause' => ['stop', 'media-pause', 'break'],
-        'file' => ['document', 'paper', 'page'],
-    ];
+    $synonyms_lookup = get_icon_synonyms();
+    $variant_synonyms = get_icon_variant_synonyms();
 
-    $variant_synonyms = [
-        'solid' => ['fill', 'bold'],
-        'regular' => ['outline', 'normal'],
-        'light' => ['thin'],
-        'duotone' => ['two-tone'],
-    ];
-
-    // If `variant` is provided, resolve synonyms
+    // Resolve variant synonyms
     $variant_set = [];
     if ($variant) {
         $variant_set[] = strtolower($variant);
@@ -125,84 +123,59 @@ function get_icons($query = null) {
         }
     }
 
-    // If query is a string, turn it into an array of tokens
+    // Tokenize query
     if (is_string($query)) {
         $query = array_filter(preg_split("/[^\-:_A-Za-z0-9]+/", strtolower($query)));
     }
 
-    // Filter icons based on query and variant
-    $icons = array_filter($icons, function($icon) use ($sets, $query, $variant_set, $synonym_lookup, &$results) {
-        $icon_name = $icon->name;
-        $icon_tokens = explode('-', $icon_name); // Split icon name into tokens
+    // Filter icons
+    foreach ($icons as $icon) {
+        $icon_name = strtolower($icon->name);
+        $icon_tokens = explode('-', $icon_name);
         $icon_variant = $icon->variant ? strtolower($icon->variant) : '';
         $set = $sets[$icon->prefix] ?? null;
-        // Get aliases for the current set's variants
+
+        // Resolve aliases for the variant
         $aliases = $set ? get_variant_aliases($set->variants, $icon_variant) : [];
 
-        // Check if any alias matches the variant set
+        // Skip if no variant matches
         if (count($variant_set) && !array_intersect($variant_set, $aliases)) {
-            return false; // Skip this icon if no alias matches
+            continue;
         }
 
-        if (!count($query)) {
-            $results[] = $icon;
-            return true;
-        }
+        // Relevance calculation
+        $relevance = 0;
 
-        // Check for exact match
-        if (in_array($icon_name, $query)) {
-            $icon->relevance = 1; // Exact match relevance
-            $results[] = $icon;
-            return true;
-        }
-
-        // Query token matching and synonym checking
-        $matched_tokens = 0;
-        $weighted_score = 0;
-
-        // Leading character matching
-        foreach ($query as $query_token) {
-            // Check if the icon name starts with the query token
-            if (strpos($icon_name, $query_token) === 0) {
-                $weighted_score += 1; // Increase score for leading character match
-                $matched_tokens++;
-                break; // No need to check further for leading matches
+        // Exact match on name
+        if ($icon_name === $name) {
+            $relevance = 1.0; // Top priority
+        } elseif (in_array($icon_name, $query)) {
+            $relevance = 0.9; // High relevance for full matches
+        } else {
+            // Token matching
+            foreach ($query as $query_token) {
+                if (in_array($query_token, $icon_tokens)) {
+                    $relevance += 0.5; // Moderate score for matching tokens
+                }
             }
-        }
 
-        foreach ($icon_tokens as $icon_token) {
-            $index = array_search($icon_token, $query);
-            if ($index !== false) {
-                $weighted_score += (1 / ($index + 1)); // Higher weight for earlier matches
-                $matched_tokens++;
-            }
-        }
-
-        // Check for synonyms if no direct match
-        if ($matched_tokens === 0 && $query) {
-            foreach ($query as $token) {
-                if (isset($synonym_lookup[$token])) {
-                    foreach ($synonym_lookup[$token] as $synonym) {
+            // Synonym matching
+            foreach ($query as $query_token) {
+                if (isset($synonym_lookup[$query_token])) {
+                    foreach ($synonym_lookup[$query_token] as $synonym) {
                         if (in_array($synonym, $icon_tokens)) {
-                            $weighted_score = max($weighted_score, 0.3); // Lower weight for synonym match
+                            $relevance += 0.3; // Lower score for synonym matches
                         }
                     }
                 }
             }
         }
 
-        // Calculate relevance
-        $total_icon_tokens = count($icon_tokens);
-        $relevance = $total_icon_tokens > 0 ? ($weighted_score / $total_icon_tokens) : 0;
-
         if ($relevance > 0) {
             $icon->relevance = $relevance;
             $results[] = $icon;
-            return true;
         }
-
-        return false;
-    });
+    }
 
     // Sort results by relevance
     usort($results, function($a, $b) {

@@ -302,7 +302,7 @@ const withIconListWrapperProps = createHigherOrderComponent((BlockListBlock) => 
             style: {
                 '--agnosticon-char': data.char || '',
                 '--agnosticon-code': data.code ? `'${data.code}'` : '',
-                '--agnosticon-font-family': data.fontFamily,
+                '--agnosticon-font-family': `"${data.fontFamily}"`,
                 '--agnosticon-font-weight': data.fontWeight,
                 '--agnosticon-font-size': `${data.size}px`,
                 '--agnosticon-color': data.color,
