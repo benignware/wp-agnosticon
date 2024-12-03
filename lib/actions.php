@@ -71,3 +71,16 @@ function agnosticon_search_action() {
 
 add_action( 'wp_ajax_agnosticon_search',        'benignware\wp\agnosticon\agnosticon_search_action' );
 add_action( 'wp_ajax_nopriv_agnosticon_search', 'benignware\wp\agnosticon\agnosticon_search_action' );
+
+
+function agnosticon_clear_action() {
+  // Clear the transient
+  if (delete_transient('agnosticon_data')) {
+      wp_send_json_success(['message' => 'Cache cleared successfully'], 200);
+  } else {
+      wp_send_json_error(['message' => 'Failed to clear cache'], 500);
+  }
+}
+
+add_action('wp_ajax__agnosticon_clear', 'benignware\wp\agnosticon\agnosticon_clear_action');
+add_action('wp_ajax_nopriv__agnosticon_clear', 'benignware\wp\agnosticon\agnosticon_clear_action');

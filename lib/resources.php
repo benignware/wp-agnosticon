@@ -39,6 +39,9 @@ function _agnosticon_load_resource($url) {
     }
   }
 
+  // Skip remote urls for now
+  return null;
+
   $response = wp_remote_get($url, [
     'timeout' => 10
   ]);
@@ -100,6 +103,7 @@ function _agnosticon_load_resources() {
       );
     $resources[] = $obj;
   }
+
 
   return $resources;
 }
@@ -475,66 +479,66 @@ function _agnosticon_parse_resources($resources) {
   return $data;
 };
 
-
-
 function _agnosticon_load() {
   global $__agnosticon__;
 
   if (isset($__agnosticon__)) {
-    return;
+      return;
   }
 
   // Check if this is an AJAX request to prevent infinite loop
-  // if ( wp_doing_ajax() ) {
-  //   return;
-  // }
-
-  // Check if the 'action' parameter is set and matches
-  if ( isset( $_GET['action'] ) && $_GET['action'] === '_agnosticon_data' ) {
-    return;
+  if (isset($_GET['action']) && $_GET['action'] === '_agnosticon_data') {
+      return;
   }
 
-  $url = admin_url( 'admin-ajax.php' ) . '?action=_agnosticon_data';
+  // Attempt to retrieve cached data
+  $cached_data = get_transient('agnosticon_data');
+  if ($cached_data !== false) {
+      $__agnosticon__ = (object) [
+          'icons' => (array) $cached_data->icons,
+          'sets' => (array) $cached_data->sets,
+      ];
+      return;
+  }
+
+  // Prepare the request URL
+  $url = admin_url('admin-ajax.php') . '?action=_agnosticon_data';
   $url = preg_replace("~(https?)://localhost(\:\d*)?~", "$1://127.0.0.1", $url);
 
   // Retrieve HTTP Basic Auth credentials from server variables
-  $username = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
-  $password = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
+  $username = $_SERVER['PHP_AUTH_USER'] ?? '';
+  $password = $_SERVER['PHP_AUTH_PW'] ?? '';
 
-  // Check if the credentials are available
-  if ($username && $password) {
-      $credentials = base64_encode("{$username}:{$password}");
-      $headers = [
-          'Authorization' => 'Basic ' . $credentials,
-      ];
-  } else {
-      $headers = [];
-  }
+  $headers = $username && $password
+      ? ['Authorization' => 'Basic ' . base64_encode("{$username}:{$password}")]
+      : [];
 
+  // Make the HTTP request
   $response = wp_remote_get($url, [
       'timeout' => 5,
       'headers' => $headers,
   ]);
-  
-  if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-    $content = $response['body']; // use the content
+
+  // Handle the response
+  if (is_array($response) && !is_wp_error($response)) {
+      $content = $response['body'];
   } else {
-    echo 'ERROR ' . $url;
-    print_r($response);
-    exit;
+      echo 'ERROR ' . esc_url($url);
+      print_r($response);
+      exit;
   }
 
-  if ($content) {
-    $data = json_decode($content);
+  // Parse and cache the data
+  $data = $content ? json_decode($content) : null;
+
+  if ($data) {
+      // Cache the data in a transient
+      set_transient('agnosticon_data', $data, 0); // No expiration
+      $__agnosticon__ = (object) [
+          'icons' => (array) $data->icons,
+          'sets' => (array) $data->sets,
+      ];
   } else {
-    $data = null;
+      $__agnosticon__ = null;
   }
-  // }
-
-  // print_r($data->icons);
-
-  $__agnosticon__ = (object) [
-    'icons' => (array) $data->icons,
-    'sets' => (array) $data->sets,
-  ];
 }

@@ -16,23 +16,32 @@ function register_icons_page() {
 }
 
 function render_icons_page() {
-    // Fetch all icons server-side
-    $icons = get_icons('');
-    ?>
-    <div class="wrap agnosticon-settings">
-        <h1><?php esc_html_e( 'Available Icons', 'agnosticon' ); ?></h1>
-        <input type="text" id="agnosticon-settings-icon-search" placeholder="<?php esc_attr_e( 'Search icons...', 'agnosticon' ); ?>" />
-        <div class="agnosticon-search-header">
+  ?>
+  <div class="wrap agnosticon-settings">
+      <h1><?php esc_html_e('Icons', 'agnosticon'); ?></h1>
+      <p><?php esc_html_e('Universal icons for WordPress', 'agnosticon'); ?></p>
+      <div>
+        <button id="agnosticon-clear-cache" class="button button-seondary button-small"><?php esc_html_e('Clear Cache', 'agnosticon'); ?></button>
+      </div>
+
+      <h2>Search</h2>
+      <div>
+        <input type="text" id="agnosticon-settings-icon-search" placeholder="<?php esc_attr_e('Search icons...', 'agnosticon'); ?>" />
+      </div>
+      
+      
+      <div class="agnosticon-search-header">
           <div class="agnosticon-settings-spinner">
-            <span class="dashicons dashicons-update"></span>
-            <div class="agnosticon-settings-loading-message">Loading...</div>
+              <span class="dashicons dashicons-update"></span>
+              <div class="agnosticon-settings-loading-message"><?php esc_html_e('Loading...', 'agnosticon'); ?></div>
           </div>
-        </div>
-        <div class="agnosticon-settings-result-count"></div>
-        <div id="agnosticon-settings-results"></div>
-    </div>
-    <?php
+      </div>
+      <div class="agnosticon-settings-result-count"></div>
+      <div id="agnosticon-settings-results"></div>
+  </div>
+  <?php
 }
+
 
 function enqueue_icons_scripts( $hook ) {
   if ( $hook !== 'appearance_page_agnosticon-icons' ) {
