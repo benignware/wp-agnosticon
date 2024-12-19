@@ -157,19 +157,3 @@ function get_prefixes($strings) {
 
   return $prefixes;
 }
-
-// $strings = array(
-//   'abc-thumbs-up',
-//   'abc-thumbs-down',
-//   'abc-home',
-//   'xyz-thumbs-up',
-//   'xyz-thumbs-down',
-//   'xyz-home',
-// );
-
-
-// $prefixes = get_prefixes($strings);
-
-// echo '<pre>';
-// var_dump($prefixes);
-// echo '</pre>';
