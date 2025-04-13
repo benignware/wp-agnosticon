@@ -209,6 +209,10 @@
     useRef
   } = wp.element;
   const COMPONENT_SLUG = 'icon-control';
+  const {
+    ajaxurl
+  } = window;
+  const BASE_URL = `${ajaxurl}/wp-admin/admin-ajax.php?action=agnosticon_search`;
   const IconAutoSuggest = ({
     value,
     onChange
@@ -222,7 +226,8 @@
         setIsPopoverVisible(false);
         return;
       }
-      fetch(`${window.location.origin}/wp-admin/admin-ajax.php?action=agnosticon_search&search=${encodeURIComponent(search)}`).then(response => response.json()).then(response => {
+      const url = `${BASE_URL}&search=${encodeURIComponent(search)}`;
+      fetch(url).then(response => response.json()).then(response => {
         if (response.success) {
           setSearchResults(response.data);
           setIsPopoverVisible(response.data.length > 0);

@@ -83,8 +83,11 @@ function render_block_list($content, $block) {
         'class' => sprintf('agnosticon-list is-%s', $render_type),
     ];
 
-    $char = isset($icon_data->char) ? "'" . mb_convert_encoding("&#x{$icon_data->char};", 'UTF-8', 'HTML-ENTITIES') . "'" : null;
-    $code = $char;
+    // $char = isset($icon_data->char)
+    //     ? "'" . mb_convert_encoding("&#x{$icon_data->char};", 'UTF-8', 'HTML-ENTITIES') . "'"
+    //     : null;
+    $char = $icon->char;
+    $code = "'\\{$icon_data->char}'";
 
     $styles = [
         '--agnosticon-char' => $char,

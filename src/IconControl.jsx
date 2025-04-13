@@ -5,6 +5,9 @@ const { TextControl, Popover } = wp.components;
 const { useState, useRef } = wp.element;
 
 const COMPONENT_SLUG = 'icon-control';
+const { ajaxurl } = window;
+
+const BASE_URL = `${ajaxurl}/wp-admin/admin-ajax.php?action=agnosticon_search`;
 
 const IconAutoSuggest = ({ value, onChange }) => {
     const [searchResults, setSearchResults] = useState([]);
@@ -18,7 +21,9 @@ const IconAutoSuggest = ({ value, onChange }) => {
             return;
         }
 
-        fetch(`${window.location.origin}/wp-admin/admin-ajax.php?action=agnosticon_search&search=${encodeURIComponent(search)}`)
+        const url = `${BASE_URL}&search=${encodeURIComponent(search)}`;
+
+        fetch(url)
             .then((response) => response.json())
             .then((response) => {
                 if (response.success) {
