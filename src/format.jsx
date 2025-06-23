@@ -138,21 +138,21 @@ import IconControl from "./IconControl.jsx";
                 noArrow={false}
                 offset={10}
               >
-                 <VStack spacing={ 1 } style={{ width: '300px', padding: '10px' }}>
-                    <IconControl
-                      label="Icon"
-                      value={name}
-                      onChange={(newName) => setName(newName)}
-                    />
-                    <HStack>
-                      <Button isPrimary onClick={applyFormat}>
-                        Apply
-                      </Button>
-                      <Button isSecondary onClick={removeFormat}>
-                        Remove
-                      </Button>
-                    </HStack>
-                  </VStack>
+                <VStack spacing={ 1 } style={{ width: '300px', padding: '10px' }}>
+                  <IconControl
+                    label="Icon"
+                    value={name}
+                    onChange={(newName) => setName(newName)}
+                  />
+                  <HStack>
+                    <Button isPrimary onClick={applyFormat}>
+                      Apply
+                    </Button>
+                    <Button isSecondary onClick={removeFormat}>
+                      Remove
+                    </Button>
+                  </HStack>
+                </VStack>
             </Popover>
           )}
         </>

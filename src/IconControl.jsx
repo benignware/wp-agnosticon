@@ -1,10 +1,10 @@
 import './IconControl.css';
 
 const { __ } = wp.i18n;
-const { TextControl, Popover } = wp.components;
+const { TextControl, Popover, Panel } = wp.components;
 const { useState, useRef } = wp.element;
 
-const COMPONENT_SLUG = 'icon-control';
+const COMPONENT_SLUG = 'agnosticon-control';
 const { ajaxurl } = window;
 
 const BASE_URL = `${ajaxurl}/wp-admin/admin-ajax.php?action=agnosticon_search`;
@@ -65,14 +65,14 @@ const IconAutoSuggest = ({ value, onChange }) => {
                     <ul className={`${COMPONENT_SLUG}__results-list`}>
                         {searchResults.map((iconData) => {
                             try {
-                              iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
+                            iconData.code = String.fromCodePoint(`0x${iconData?.char}`);
                             } catch(e) {
-                              iconData.code = iconData?.char;
+                            iconData.code = iconData?.char;
                             }
 
                             const iconHtml = `<i
-                              style="${iconData.style}"
-                              data-agnosticon-code="${iconData.code}"
+                            style="${iconData.style}"
+                            data-agnosticon-code="${iconData.code}"
                             ></i>`;
 
                             return (

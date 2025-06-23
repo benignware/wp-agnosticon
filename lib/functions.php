@@ -30,7 +30,14 @@ function get_icon($query, $attrs = []) {
     return '';
   }
 
-  $attrs['class'] = isset($attrs['class']) ? $attrs['class'] . ' ' . $icon->class : $icon->class;
+  $class = isset($attrs['class']) ? $attrs['class'] . ' ' . $icon->class ?? '' : $icon->class ?? '';
+
+  $classes = explode(' ', $class);
+  $classes = array_values(array_unique($classes)); 
+  $class = implode(' ', $classes);
+
+  $attrs['class'] = $class;
+  $attrs['aria-hidden'] = 'true';
 
   $attrs_str = implode(' ', array_map(function($key, $value) {
     return "$key=\"$value\"";

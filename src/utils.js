@@ -1,3 +1,5 @@
+import IconControl from "./IconControl.jsx";
+
 class Agnosticon {
   #data = {};
 
@@ -95,6 +97,9 @@ class Agnosticon {
 
 // Ensure a single global instance
 const instance = new Agnosticon();
+instance.components = {
+  IconControl
+}
 // Object.freeze(instance);
 
 globalThis.agnosticon = instance;

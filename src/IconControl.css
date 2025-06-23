@@ -1,4 +1,4 @@
-.icon-control__results-list {
+.agnosticon-control__results-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -6,12 +6,12 @@
   max-width: 100%;
 }
 
-.icon-control__results-list-item {
+.agnosticon-control__results-list-item {
   padding: 8px 12px;
   cursor: pointer;
 }
 
-.icon-control__results-list-item label {
+.agnosticon-control__results-list-item label {
   display: inline-flex;
   align-items: center;
   width: 1.3em;

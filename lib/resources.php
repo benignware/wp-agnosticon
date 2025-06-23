@@ -233,8 +233,12 @@ function _agnosticon_parse_resources($resources) {
       $font_family_is_match = preg_match("~[^\}]*font(?:-family)?\s*:\s*?([^;}]+)~", $body, $font_family_match);
 
       $font_value =  $font_family_is_match ? $font_family_match[1] : null;
+      // Strip !important from font value
+      $font_value = preg_replace('~\s*!important\s*~', '', $font_value);
+
       $font_value = $font_value ? preg_replace('~\b(?:normal|italic|bold|\d+(?:px|rem)/\d+|var\(\s*--[\w-]+\s*,\s*)~', '', $font_value) : null;
       $font_family = $font_value ? trim($font_value, '\'") ') : null;
+
 
       $font_weight_is_match = preg_match("~[^\}]*font-weight?\s*:\s*?([^;}]+)~", $body, $font_weight_match);
       $font_weight = $font_weight_is_match ? $font_weight_match[1] : '';
